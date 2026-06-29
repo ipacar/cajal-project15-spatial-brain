@@ -44,6 +44,12 @@ home directory has a 100,000-*file* quota that a scientific environment would bl
 script puts the environment and caches on the large **project filesystem**, then registers a
 Jupyter kernel and the git hooks. A few minutes the first time.
 
+> **Env model:** each student gets their **own** environment (so you can `pixi add` and
+> experiment freely), but the package **cache is shared** on the project filesystem — packages
+> download once and each env hardlinks them, so an env costs only ~17k files instead of ~100k.
+> This only works because the cache stays on the project filesystem, which `cluster_setup.sh`
+> handles — don't override it to point at home.
+
 ## 3. Run your analysis — Open OnDemand (recommended)
 
 Everything runs in your browser, on a compute node — no SSH key or tunnel needed.
@@ -68,8 +74,8 @@ from §0) for editing and git, and run notebooks / heavy compute via OnDemand or
   ```bash
   git add -A && git commit -m "..." && git push
   ```
-- Add a package: `pixi add <pkg>` (conda-forge) or `pixi add --pypi <pkg>`, then commit
-  `pixi.toml` + `pixi.lock` so everyone stays in sync.
+- Add a package **PyPI-first**: `pixi add --pypi <pkg>` (use conda only for hard-to-build
+  compiled deps), then commit `pixi.toml` + `pixi.lock` so everyone stays in sync.
 
 ## 5. Data
 
@@ -84,6 +90,11 @@ rapids-singlecell).
 
 ## Reference
 
-- **Environment:** `pixi.toml` (+ `pixi.lock` for exact, reproducible versions).
+- **Environment:** `pixi.toml` (+ `pixi.lock` for exact, reproducible versions) —
+  [pixi docs](https://pixi.sh/latest/).
 - **Helper package:** `src/spatialbrain/` — `FilePaths` for project data paths.
-- Single-cell best practices: <https://www.sc-best-practices.org/>
+- **Code quality:** [pre-commit](https://pre-commit.com/) hooks (set up by `cluster_setup.sh`) —
+  [ruff](https://docs.astral.sh/ruff/) lint/format + [nbstripout](https://github.com/kynan/nbstripout)
+  for notebook-output stripping.
+- **Science:** [scanpy](https://scanpy.readthedocs.io) · [squidpy](https://squidpy.readthedocs.io) ·
+  [spatialdata](https://spatialdata.scverse.org) · [single-cell best practices](https://www.sc-best-practices.org/).
