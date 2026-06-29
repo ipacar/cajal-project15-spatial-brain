@@ -1,8 +1,8 @@
 [workspace]
-name = "analysis-template"
+name = "spatialbrain"
 version = "0.1.0"
-description = "Template for single-cell/spatial analysis projects (pixi-managed)"
-authors = ["Your Name <your.email@example.com>"]
+description = "CAJAL Neuromics 2026 — Project 15: Mapping the Spatial Cellular Architecture of the Brain"
+authors = ["Marius Lange <marius131119@gmail.com>"]
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "linux-64"]
 
@@ -10,7 +10,7 @@ platforms = ["osx-arm64", "linux-64"]
 lab = "jupyter lab"
 test = "pytest"
 rename = { cmd = "python scripts/rename_package.py", description = "Rename the placeholder package/project (run once on a fresh clone; see scripts/rename_package.py)" }
-install-kernel = "python -m ipykernel install --user --name=analysis-template --display-name='Analysis Template (Pixi)'"
+install-kernel = "python -m ipykernel install --user --name=spatialbrain --display-name='Spatial Brain (Project 15)'"
 install-hooks = { cmd = "pre-commit install --install-hooks && nbstripout --install && git config diff.ipynb.textconv 'nbstripout -t'", description = "Install pre-commit hooks + the nbstripout notebook-output filter (run once per clone)" }
 
 [dependencies]
@@ -59,7 +59,7 @@ pytest = "*"
 session-info2 = "*"
 
 # Local editable package for path helpers
-myanalysis = { path = ".", editable = true }
+spatialbrain = { path = ".", editable = true }
 igraph = ">=1.0.0, <2"
 celltypist = ">=1.7.1, <2"
 
