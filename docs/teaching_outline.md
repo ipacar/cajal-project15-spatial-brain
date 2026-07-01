@@ -274,34 +274,33 @@ right slot and pick the right framework per task.
 
 **Deliverable:** annotated spatial atlas + niche map + reproduced Fig. 2 panels + discrepancy write-up.
 
-## Level 3 — Beyond the paper · 2.5 days · *open, ATAC-flavoured*
+## Level 3 — Beyond the paper · 2.5 days · *open research projects*
 
-*"Ask a question the paper didn't fully answer."* Blank notebook + planning template + 15-min
-presentation (adapt the `cajal_comp_proj` L3 template — copy its planning structure). Largest block;
-students design + run their own question. **CPU-only** — favour implementations that **parallelise
-across cores** (or subsample) for the 232k-nucleus multiome, and expect longer runtimes than the
-GPU-based papers report. **Note tooling not yet in the env** (no SCENIC+/pyscenic/muon in `pixi.toml`
-— add per chosen direction). If reusing the L1 purity metric, put it in `src/spatialbrain/` so L3 can
-import it. Directions (strongest first):
+*"Ask a question the paper didn't fully answer."* **Built:**
+`analysis/level3/03_beyond_the_paper_{student,solution}.ipynb`. Shape mirrors the `cajal_comp_proj` L3
+**solution**: a **menu of 3 projects** + **one worked end-to-end** (P2) + planning template + ~15-min
+mini-presentation. Student = menu + blank workspace; solution = menu + the executed worked project.
+**Post-reveal** (paper/figures/cell types and the unstripped `wang2025_merfish_cells.h5ad` used freely).
+**CPU-only**, parallelise/subsample; **read** shared read-only files, **write** only to your own repo.
+Tooling not yet in env (no SCENIC+/pyscenic/muon) — add per direction; put a reused L1 purity metric in
+`src/spatialbrain/`.
 
-- **snATAC / multiome integration** — GRNs, peak-to-gene, motif activity (`wang2025_multiome.h5mu`
-  `ATAC`: 82,505 peaks, coords in `var`; `X_wnn.umap` computed). Authors' `SCENICplus/` is the reference. *(Strong.)*
-- **Tri-IPC / interneuron spatial mapping** — locate Tri-IPCs (IPC-glia) + progeny
-  **IN-NCx_dGE-immature** (renamed from IN-dLGE-immature; MEIS2+/SP8+) in white matter across stages
-  (Ext. Fig. 5); test the neurogenesis→gliogenesis gradient. *(Strong — anchors below.)*
-- **Niche parametrization** — extends the L2 niche step: vary knn/`radius`/niche count, assess
-  stability. Tools: `squidpy`, or Sopa's [spatial tutorial](https://prism-oncology.github.io/sopa/tutorials/spatial/).
-- **Second reference** — annotate with an external developing-cortex atlas; compare concordance.
-- **Denoising** — reference-based spatial denoising, related back to the L1 purity metric. Prefer
-  **CPU-bound** methods: **SPLIT** (*Nat. Methods* 2026, RCDT-based correction of transcript
-  spillover/contamination — no deep net) or similar. *(ResolVI is possible but scvi-tools/GPU-favoured
-  — opt-in, CPU-slow.)*
-- **Disease-risk mapping** — GWAS risk onto spatial types/niches. *(Trickier; scope carefully.)*
+**Menu:**
+- **P1 · Chromatin logic of a lineage (snATAC/multiome)** — marker peaks, paired peak→gene links, TF
+  activity (`decoupler` 2.x); SCENIC+ a stretch. `wang2025_multiome_atac.h5ad` (82,505 peaks, coords in
+  `var`) + `_rna.h5ad`. *Heaviest — 16 GB, open backed + subset (~3 min + ~3 min).*
+- **P2 · Neurogenesis→gliogenesis switch in space (MERFISH)** — ⭐ **worked**. Tri-IPCs + progeny
+  (OPC/astro/**IN-NCx_dGE-immature**) across zones × age × area; `squidpy` neighbourhood enrichment; the
+  interneuron white-matter question. No trajectory inference (3 ages = cross-sectional axis). Light,
+  MERFISH-only; also teaches the age↔area↔donor confound (trend monotonic in PFC, not V1). Anchors Qs 1–2.
+- **P3 · Disease-risk map (multiome→space)** — score SFARI/GWAS risk per cell type (`decoupler` /
+  `score_genes`) → ASD↔immature-IT; project onto space. ⚠️ only ~4/30 top ASD genes on the 300-gene panel
+  → spatial map illustrative; RNA-ref enrichment is the solid part. Anchors Q3.
 
-**The paper's own open questions (ready-made anchors):**
-- *Fate of perinatal EN-newborn cells* in the PFC SVZ — grey matter / white matter / olfactory bulb
-  "remains to be determined." A spatial-trajectory question.
-- *Do IN-NCx_dGE-immature cells become white-matter interneurons?* — spatial data only *indicate* it;
-  "further investigation is needed." A direct spatial-mapping target.
-- *Surprising GWAS associations* (RG↔executive function, microglia↔working memory) "remain to be
-  elucidated." Ties to the disease-risk direction.
+**Other directions (in-notebook "propose-your-own"):** niche parametrization (`squidpy`/Sopa); second
+reference (external atlas concordance); denoising (**SPLIT**, CPU-bound, tie to L1 purity); **Tri-IPC ↔
+glioblastoma** (map the Tri-IPC signature onto external GBM data — needs a GBM reference **staged first**).
+
+**Paper's open questions (menu anchors):** EN-newborn fate in PFC SVZ "remains to be determined" *(→ P2)*;
+IN-NCx_dGE-immature → white-matter interneurons, "further investigation needed" *(→ P2)*; GWAS
+associations (RG↔executive function, microglia↔working memory) "remain to be elucidated" *(→ P3)*.
