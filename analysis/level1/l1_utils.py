@@ -22,14 +22,24 @@ from pathlib import Path
 import numpy as np
 import spatialdata as sd
 
-__all__ = ["run_cellpose", "run_baysor", "run_proseg", "default_n_workers",
-           "gene_on_calls", "negative_marker_purity", "proportion_assigned_reads",
-           "shapes_area_um2", "mutually_exclusive_markers_from_reference"]
+__all__ = [
+    "run_cellpose",
+    "run_baysor",
+    "run_proseg",
+    "default_n_workers",
+    "gene_on_calls",
+    "negative_marker_purity",
+    "proportion_assigned_reads",
+    "shapes_area_um2",
+    "mutually_exclusive_markers_from_reference",
+]
 
 
 def _sopa() -> str:
-    """Absolute path to the ``sopa`` CLI in the active env (Jupyter kernels don't
-    always put the env's ``bin`` on ``PATH``)."""
+    """Absolute path to the ``sopa`` CLI in the active env.
+
+    Jupyter kernels don't always put the env's ``bin`` on ``PATH``.
+    """
     exe = Path(sys.executable).parent / "sopa"
     return str(exe) if exe.exists() else "sopa"
 
@@ -42,8 +52,7 @@ def default_n_workers() -> int:
 def _run(cmd: list[str], single_threaded: bool = False) -> subprocess.CompletedProcess:
     env = dict(os.environ)
     if single_threaded:
-        env.update(OMP_NUM_THREADS="1", MKL_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1",
-                   NUMEXPR_NUM_THREADS="1")
+        env.update(OMP_NUM_THREADS="1", MKL_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1", NUMEXPR_NUM_THREADS="1")
     return subprocess.run([_sopa(), *cmd], env=env, capture_output=True, text=True)
 
 
@@ -77,8 +86,17 @@ def run_cellpose(
     1500 px (not Sopa's cluster-oriented 6000) so there are enough patches to fill the cores.
     """
     n_workers = n_workers or default_n_workers()
-    _run(["patchify", "image", zarr_path, "--patch-width-pixel", str(patch_width),
-          "--patch-overlap-pixel", str(patch_overlap)]).check_returncode()
+    _run(
+        [
+            "patchify",
+            "image",
+            zarr_path,
+            "--patch-width-pixel",
+            str(patch_width),
+            "--patch-overlap-pixel",
+            str(patch_overlap),
+        ]
+    ).check_returncode()
     n = _n_patches(zarr_path, "image_patches")
 
     chan_args: list[str] = []
@@ -87,11 +105,22 @@ def run_cellpose(
 
     def seg(i: int) -> int:
         return _run(
-            ["segmentation", "cellpose", zarr_path, "--patch-index", str(i),
-             "--diameter", str(diameter), *chan_args,
-             "--flow-threshold", str(flow_threshold),
-             "--cellprob-threshold", str(cellprob_threshold),
-             "--min-area", str(min_area)],
+            [
+                "segmentation",
+                "cellpose",
+                zarr_path,
+                "--patch-index",
+                str(i),
+                "--diameter",
+                str(diameter),
+                *chan_args,
+                "--flow-threshold",
+                str(flow_threshold),
+                "--cellprob-threshold",
+                str(cellprob_threshold),
+                "--min-area",
+                str(min_area),
+            ],
             single_threaded=True,
         ).returncode
 
@@ -104,11 +133,27 @@ def run_cellpose(
 
 # Baysor config from Sopa's workflow/config/merscope/baysor_cellpose.yaml
 BAYSOR_CONFIG = {
-    "data": {"force_2d": True, "min_molecules_per_cell": 10, "x": "x", "y": "y", "z": "z",
-             "min_molecules_per_gene": 0, "min_molecules_per_segment": 3, "confidence_nn_id": 6},
-    "segmentation": {"scale": 6.25, "scale_std": "25%", "prior_segmentation_confidence": 0.5,
-                     "estimate_scale_from_centers": False, "n_clusters": 4, "iters": 500,
-                     "n_cells_init": 0, "nuclei_genes": "", "cyto_genes": ""},
+    "data": {
+        "force_2d": True,
+        "min_molecules_per_cell": 10,
+        "x": "x",
+        "y": "y",
+        "z": "z",
+        "min_molecules_per_gene": 0,
+        "min_molecules_per_segment": 3,
+        "confidence_nn_id": 6,
+    },
+    "segmentation": {
+        "scale": 6.25,
+        "scale_std": "25%",
+        "prior_segmentation_confidence": 0.5,
+        "estimate_scale_from_centers": False,
+        "n_clusters": 4,
+        "iters": 500,
+        "n_cells_init": 0,
+        "nuclei_genes": "",
+        "cyto_genes": "",
+    },
 }
 
 
@@ -120,8 +165,10 @@ def run_baysor(
     min_area: float = 20,
     config: dict | None = None,
 ) -> int:
-    """Baysor refining the CellPose prior. Returns #cells. (Baysor is internally
-    multithreaded, so a single transcript patch already uses the cores.)"""
+    """Baysor refining the CellPose prior. Returns #cells.
+
+    (Baysor is internally multithreaded, so a single transcript patch already uses the cores.)
+    """
     import sopa
 
     s = sd.read_zarr(zarr_path)
@@ -152,12 +199,22 @@ def shapes_area_um2(sdata, shapes_key: str, points_key: str | None = None) -> np
 
     if points_key is None:
         points_key = next(k for k in sdata.points if "patch" not in k.lower())
-    px_per_um = abs(float(get_transformation(sdata[points_key], "global")
-                          .to_affine_matrix(input_axes=("x", "y"), output_axes=("x", "y"))[0, 0]))
-    intrinsic_to_px = abs(float(get_transformation(sdata[shapes_key], "global")
-                                .to_affine_matrix(input_axes=("x", "y"), output_axes=("x", "y"))[0, 0]))
+    px_per_um = abs(
+        float(
+            get_transformation(sdata[points_key], "global").to_affine_matrix(
+                input_axes=("x", "y"), output_axes=("x", "y")
+            )[0, 0]
+        )
+    )
+    intrinsic_to_px = abs(
+        float(
+            get_transformation(sdata[shapes_key], "global").to_affine_matrix(
+                input_axes=("x", "y"), output_axes=("x", "y")
+            )[0, 0]
+        )
+    )
     micron_per_intrinsic = intrinsic_to_px / px_per_um
-    return sdata[shapes_key].geometry.area.to_numpy() * micron_per_intrinsic ** 2
+    return sdata[shapes_key].geometry.area.to_numpy() * micron_per_intrinsic**2
 
 
 # --------------------------------------------------------------------------------------
@@ -170,11 +227,12 @@ def shapes_area_um2(sdata, shapes_key: str, points_key: str | None = None) -> np
 # rate. It needs no cell-type labels on the spatial side, so it works pre-annotation.
 # --------------------------------------------------------------------------------------
 
-def gene_on_calls(counts: np.ndarray, min_positive: int = 20) -> np.ndarray:
-    """Boolean "gene is ON" per cell via a per-gene 2-component Gaussian mixture on
-    ``log1p`` counts (signal vs background), instead of the naive ``count > 0``.
 
-    Falls back to ``count > 0`` for genes with too few positive cells to fit a mixture.
+def gene_on_calls(counts: np.ndarray, min_positive: int = 20) -> np.ndarray:
+    """Boolean "gene is ON" per cell, via a per-gene 2-component Gaussian mixture.
+
+    Fits on ``log1p`` counts (signal vs background) instead of the naive ``count > 0``;
+    falls back to ``count > 0`` for genes with too few positive cells to fit a mixture.
     """
     from sklearn.mixture import GaussianMixture
 
@@ -243,6 +301,7 @@ def proportion_assigned_reads(assigned_total: float, n_transcripts_total: int) -
 # logic). The resulting pairs feed `negative_marker_purity` on the label-free spatial data.
 # --------------------------------------------------------------------------------------
 
+
 def mutually_exclusive_markers_from_reference(
     ref_adata,
     class_key: str = "class",
@@ -296,7 +355,7 @@ def mutually_exclusive_markers_from_reference(
     pairs: list[tuple[str, str]] = []
     lins = list(lineage_markers)
     for i, la in enumerate(lins):
-        for lb in lins[i + 1:]:
+        for lb in lins[i + 1 :]:
             for ga in lineage_markers[la]:
                 for gb in lineage_markers[lb]:
                     ea, eb = expressed[:, gidx[ga]], expressed[:, gidx[gb]]
