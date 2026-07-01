@@ -168,3 +168,4 @@ data/demo/
 # Claude Code local files (personal settings + local agent worktrees)
 .claude/settings.local.json
 .claude/worktrees/
+analysis/level1/__pycache__/

@@ -122,6 +122,36 @@ right slot and pick the right framework per task.
 
 *"What did the instrument measure, and which cells can we trust?"*
 
+> **🚧 Build status (WIP — paused mid-session).** Helpers + design are validated on the cluster;
+> the two solution notebooks in `analysis/level1/` are an **earlier draft** built *before* the
+> parameter/metric/crop overhaul below — they run but must be **rebuilt** against the locked decisions.
+>
+> **Locked decisions (validated by cluster experiments):**
+> - **Crop:** candidate **C** — center px (88000, 33000), **1000 µm** square on the cortical band
+>   (layer-crossing → lineage diversity; see `figures/l1_candidate_crops.png`). Student crop is
+>   written to **home** (fine); heavy dev crops go to `…/C15/_l1_scratch` (home has a real inode cap).
+> - **Segmentation (`analysis/level1/l1_utils.py`, process-parallel CLI, CPU):** CellPose v3 **whole-cell**
+>   `channels=["PolyT","DAPI"]`, **diameter ≈96 px** (=10.3 µm, measured from vendor `volume`, *not* from a
+>   segmentation); Baysor `prior_segmentation_confidence=0.5`; Proseg whole-crop. (Old defaults 60 px /
+>   DAPI-only / conf=1 were unit-inconsistent — CellPose diameter is px, Baysor scale is µm radius.)
+> - **Metric:** x = **proportion of assigned reads** (Σ assigned / all decoded — the discriminating axis;
+>   vendor assigns only ~0.58 vs Baysor ~0.96); y = **negative-marker purity** as a **guard rail only** —
+>   it stays ~0.97 for all *reasonable* segmentations (spread ≈0.006 even after every fix; big spreads in
+>   ResolVI/Xenium come from denoising / expansion sweeps we don't do). Marker pairs are **derived from the
+>   reference** (`l1_utils.mutually_exclusive_markers_from_reference`, `class` lineages on
+>   `wang2025_multiome_rna_panel_ref.h5ad`, reference labels only → 154 cross-lineage pairs), **not**
+>   hand-picked. Cite Salas + ResolVI.
+>
+> **Still open (do next session):**
+> 1. **Rebuild the base `.zarr`** so `authors_cells` = **all-z** vendor cells (2-D-projected) + full table —
+>    makes Author a fair, single-object baseline (z3 subset unfairly lowers its assigned-reads); modify
+>    `data_download/build_baseline_spatialdata.py` (currently `ZIDX=3` only).
+> 2. **Rebuild both notebooks** on crop C with the locked params/metric + the **developing-cortex bio story**
+>    in NB1 (name layers/lineages — *not* the paper/its cell types) + a **reference-vs-vendor co-expression
+>    plot** (ResolVI Fig-2D style) motivating purity on a worst-case pair.
+> 3. Re-execute via the `spatialbrain` kernel; re-run the adversarial review; then student-stripped copies.
+
+
 1. **Load** `UCSF2018-003-MFG_baseline.zarr` (SpatialData; contents in §Staged data). z3-only, 90,962 cells.
 2. **Explore & QC** — transcripts/cell, genes/cell, in-situ markers over DAPI/polyT; control
    probes, volume, counts, doublets. (Standard MERSCOPE QC — keep student framing neutral.)
